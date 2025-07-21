@@ -66,28 +66,28 @@
     }
 
     async function getImageFromSubfolder(day) {
-      try {
-        // Step 1: Get all folders (day1, day2...)
-        const folderListUrl = `https://www.googleapis.com/drive/v3/files?q='${PARENT_FOLDER_ID}'+in+parents+and+mimeType='application/vnd.google-apps.folder'&key=${API_KEY}`;
-        const folderResp = await fetch(folderListUrl);
-        const folderData = await folderResp.json();
-        const todayFolder = folderData.files.find(f => f.name.toLowerCase() === `day${day}`);
-        if (!todayFolder) throw new Error("No folder found");
+  try {
+    // Step 1: Get all folders (day1, day2...)
+    const folderListUrl = `https://www.googleapis.com/drive/v3/files?q='${PARENT_FOLDER_ID}'+in+parents+and+mimeType='application/vnd.google-apps.folder'&key=${API_KEY}&fields=files(id,name)`;
+    const folderResp = await fetch(folderListUrl);
+    const folderData = await folderResp.json();
+    const todayFolder = folderData.files.find(f => f.name.toLowerCase() === `day${day}`);
+    if (!todayFolder) throw new Error("No folder found");
 
-        // Step 2: Get image inside that subfolder
-        const imageListUrl = `https://www.googleapis.com/drive/v3/files?q='${todayFolder.id}'+in+parents+and+mimeType contains 'image/'&key=${API_KEY}&fields=files(id,name)`;
-        const imageResp = await fetch(imageListUrl);
-        const imageData = await imageResp.json();
-        const image = imageData.files[0];
-        if (!image) throw new Error("No image found");
+    // Step 2: Get image inside that subfolder
+    const imageListUrl = `https://www.googleapis.com/drive/v3/files?q='${todayFolder.id}'+in+parents+and+mimeType contains 'image/'&key=${API_KEY}&fields=files(id,name,thumbnailLink)`;
+    const imageResp = await fetch(imageListUrl);
+    const imageData = await imageResp.json();
+    const image = imageData.files[0];
+    if (!image || !image.thumbnailLink) throw new Error("No image found");
 
-        const imageURL = `https://drive.google.com/uc?id=${image.id}`;
-        return imageURL;
-      } catch (err) {
-        console.error("Error fetching image:", err);
-        return null;
-      }
-    }
+    return image.thumbnailLink.replace('=s220', '=s800'); // Increase quality if needed
+  } catch (err) {
+    console.error("Error fetching image:", err);
+    return null;
+  }
+}
+
 
     async function showTodayContent() {
       const day = getCurrentDay();
