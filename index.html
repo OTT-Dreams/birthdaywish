@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Happy Birthday Countdown</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      background: #f9f9f9;
+      color: #333;
+      text-align: center;
+    }
+    h1 {
+      font-size: 2rem;
+      margin-bottom: 5px;
+    }
+    .day {
+      font-size: 1.2rem;
+      margin-bottom: 20px;
+      color: #555;
+    }
+    .message {
+      font-size: 1.4rem;
+      margin: 20px 0;
+    }
+    img {
+      max-width: 100%;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+  </style>
+</head>
+<body>
+  <h1>Countdown to Your Birthday 🎉</h1>
+  <div class="day" id="dayText">Loading...</div>
+  <div class="message" id="message">Please wait...</div>
+  <div id="photoContainer"></div>
+
+  <script>
+    const API_KEY = 'AIzaSyBZYUGdq5LVDCTjhh1bLO9pU4Dg5SBqt4Y';
+    const PARENT_FOLDER_ID = '1D2sJUKRmhTd-652LkRd0a1ltK2nEnWG_';
+    const TARGET_DATE = new Date("2024-12-17");
+    const START_DATE = new Date("2024-07-21");
+
+    const messages = {
+      1: "Hey love, our countdown begins today 💫",
+      2: "You’re my sunshine on every cloudy day ☀️",
+      3: "Every heartbeat says your name ❤️",
+      4: "You make my world beautiful 🌍",
+      5: "Missing you more with every day 🕊️",
+      6: "Your smile is my favourite thing 😍",
+      7: "You're the reason I believe in love ✨"
+    };
+
+    function getCurrentDay() {
+      const today = new Date();
+      const diffTime = today - START_DATE;
+      return Math.min(Math.floor(diffTime / (1000 * 60 * 60 * 24)) + 1, 150);
+    }
+
+    async function getImageFromSubfolder(day) {
+      try {
+        // Step 1: Get all folders (day1, day2...)
+        const folderListUrl = `https://www.googleapis.com/drive/v3/files?q='${PARENT_FOLDER_ID}'+in+parents+and+mimeType='application/vnd.google-apps.folder'&key=${API_KEY}`;
+        const folderResp = await fetch(folderListUrl);
+        const folderData = await folderResp.json();
+        const todayFolder = folderData.files.find(f => f.name.toLowerCase() === `day${day}`);
+        if (!todayFolder) throw new Error("No folder found");
+
+        // Step 2: Get image inside that subfolder
+        const imageListUrl = `https://www.googleapis.com/drive/v3/files?q='${todayFolder.id}'+in+parents+and+mimeType contains 'image/'&key=${API_KEY}&fields=files(id,name)`;
+        const imageResp = await fetch(imageListUrl);
+        const imageData = await imageResp.json();
+        const image = imageData.files[0];
+        if (!image) throw new Error("No image found");
+
+        const imageURL = `https://drive.google.com/uc?id=${image.id}`;
+        return imageURL;
+      } catch (err) {
+        console.error("Error fetching image:", err);
+        return null;
+      }
+    }
+
+    async function showTodayContent() {
+      const day = getCurrentDay();
+      document.getElementById("dayText").textContent = `Day ${day}`;
+
+      const msg = messages[day] || "I love you more every day 💖";
+      document.getElementById("message").textContent = msg;
+
+      const imageUrl = await getImageFromSubfolder(day);
+      const container = document.getElementById("photoContainer");
+      if (imageUrl) {
+        const img = document.createElement("img");
+        img.src = imageUrl;
+        img.alt = `Day ${day} photo`;
+        container.appendChild(img);
+      } else {
+        container.textContent = "No image uploaded yet 📷";
+      }
+    }
+
+    showTodayContent();
+  </script>
+</body>
+</html>
