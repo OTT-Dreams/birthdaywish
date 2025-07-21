@@ -13,17 +13,18 @@
       align-items: center;
       justify-content: center;
       padding: 20px;
-      background: #f9f9f9;
+      background: #fdfdfd;
       color: #333;
       text-align: center;
+      min-height: 100vh;
     }
     h1 {
       font-size: 2rem;
-      margin-bottom: 5px;
+      margin-bottom: 10px;
     }
     .day {
-      font-size: 1.2rem;
-      margin-bottom: 20px;
+      font-size: 1.1rem;
+      margin-bottom: 15px;
       color: #555;
     }
     .message {
@@ -32,8 +33,8 @@
     }
     img {
       max-width: 100%;
-      border-radius: 12px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      border-radius: 16px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.1);
     }
   </style>
 </head>
@@ -46,8 +47,8 @@
   <script>
     const API_KEY = 'AIzaSyDutn48HU6P7Ichd9ckaTnJV2anbjuoudY';
     const PARENT_FOLDER_ID = '1dENRlkLCgXEV4Ul3O1y3ToKC6-7eWaVM';
-    const TARGET_DATE = new Date("2024-12-17");
     const START_DATE = new Date("2024-07-21");
+    const END_DATE = new Date("2024-12-17");
 
     const messages = {
       1: "Hey love, our countdown begins today 💫",
@@ -62,41 +63,40 @@
     function getCurrentDay() {
       const today = new Date();
       const diffTime = today - START_DATE;
-      return Math.min(Math.floor(diffTime / (1000 * 60 * 60 * 24)) + 1, 150);
+      const dayNumber = Math.floor(diffTime / (1000 * 60 * 60 * 24)) + 1;
+      const maxDays = Math.floor((END_DATE - START_DATE) / (1000 * 60 * 60 * 24)) + 1;
+      return Math.max(1, Math.min(dayNumber, maxDays));
     }
 
-    async function getImageFromSubfolder(day) {
-  try {
-    // Step 1: Get all folders (day1, day2...)
-    const folderListUrl = `https://www.googleapis.com/drive/v3/files?q='${PARENT_FOLDER_ID}'+in+parents+and+mimeType='application/vnd.google-apps.folder'&key=${API_KEY}&fields=files(id,name)`;
-    const folderResp = await fetch(folderListUrl);
-    const folderData = await folderResp.json();
-    const todayFolder = folderData.files.find(f => f.name.toLowerCase() === `day${day}`);
-    if (!todayFolder) throw new Error("No folder found");
+    async function getThumbnailFromSubfolder(day) {
+      try {
+        const folderListUrl = `https://www.googleapis.com/drive/v3/files?q='${PARENT_FOLDER_ID}'+in+parents+and+mimeType='application/vnd.google-apps.folder'&key=${API_KEY}&fields=files(id,name)`;
+        const folderResp = await fetch(folderListUrl);
+        const folderData = await folderResp.json();
+        const todayFolder = folderData.files.find(f => f.name.toLowerCase() === `day${day}`);
+        if (!todayFolder) throw new Error("No folder found for day " + day);
 
-    // Step 2: Get image inside that subfolder
-    const imageListUrl = `https://www.googleapis.com/drive/v3/files?q='${todayFolder.id}'+in+parents+and+mimeType contains 'image/'&key=${API_KEY}&fields=files(id,name,thumbnailLink)`;
-    const imageResp = await fetch(imageListUrl);
-    const imageData = await imageResp.json();
-    const image = imageData.files[0];
-    if (!image || !image.thumbnailLink) throw new Error("No image found");
+        const imageListUrl = `https://www.googleapis.com/drive/v3/files?q='${todayFolder.id}'+in+parents+and+mimeType contains 'image/'&key=${API_KEY}&fields=files(id,name,thumbnailLink)`;
+        const imageResp = await fetch(imageListUrl);
+        const imageData = await imageResp.json();
+        const image = imageData.files[0];
+        if (!image || !image.thumbnailLink) throw new Error("No image found");
 
-    return image.thumbnailLink.replace('=s220', '=s800'); // Increase quality if needed
-  } catch (err) {
-    console.error("Error fetching image:", err);
-    return null;
-  }
-}
-
+        return image.thumbnailLink.replace('=s220', '=s800');
+      } catch (err) {
+        console.error("Image error:", err);
+        return null;
+      }
+    }
 
     async function showTodayContent() {
       const day = getCurrentDay();
       document.getElementById("dayText").textContent = `Day ${day}`;
 
-      const msg = messages[day] || "I love you more every day 💖";
+      const msg = messages[day] || "I love you more with every passing day 💖";
       document.getElementById("message").textContent = msg;
 
-      const imageUrl = await getImageFromSubfolder(day);
+      const imageUrl = await getThumbnailFromSubfolder(day);
       const container = document.getElementById("photoContainer");
       if (imageUrl) {
         const img = document.createElement("img");
