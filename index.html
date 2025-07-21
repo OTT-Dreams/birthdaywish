@@ -45,8 +45,6 @@
   <div id="photoContainer"></div>
 
   <script>
-    const API_KEY = 'AIzaSyDutn48HU6P7Ichd9ckaTnJV2anbjuoudY';
-    const PARENT_FOLDER_ID = '1dENRlkLCgXEV4Ul3O1y3ToKC6-7eWaVM';
     const START_DATE = new Date("2024-07-21");
     const END_DATE = new Date("2024-12-17");
 
@@ -58,6 +56,14 @@
       5: "Missing you more with every day 🕊️",
       6: "Your smile is my favourite thing 😍",
       7: "You're the reason I believe in love ✨"
+      // Add more messages here...
+    };
+
+    const images = {
+      1: "https://drive.google.com/file/d/1dNlmyfQpCGfqpnEZfBrlqBfeMlbEfyTR/view?usp=drivesdk",
+      2: "https://example.com/image2.jpg",
+      3: "https://example.com/image3.jpg"
+      // Add more image URLs here, use actual links
     };
 
     function getCurrentDay() {
@@ -68,36 +74,17 @@
       return Math.max(1, Math.min(dayNumber, maxDays));
     }
 
-    async function getThumbnailFromSubfolder(day) {
-      try {
-        const folderListUrl = `https://www.googleapis.com/drive/v3/files?q='${PARENT_FOLDER_ID}'+in+parents+and+mimeType='application/vnd.google-apps.folder'&key=${API_KEY}&fields=files(id,name)`;
-        const folderResp = await fetch(folderListUrl);
-        const folderData = await folderResp.json();
-        const todayFolder = folderData.files.find(f => f.name.toLowerCase() === `day${day}`);
-        if (!todayFolder) throw new Error("No folder found for day " + day);
-
-        const imageListUrl = `https://www.googleapis.com/drive/v3/files?q='${todayFolder.id}'+in+parents+and+mimeType contains 'image/'&key=${API_KEY}&fields=files(id,name,thumbnailLink)`;
-        const imageResp = await fetch(imageListUrl);
-        const imageData = await imageResp.json();
-        const image = imageData.files[0];
-        if (!image || !image.thumbnailLink) throw new Error("No image found");
-
-        return image.thumbnailLink.replace('=s220', '=s800');
-      } catch (err) {
-        console.error("Image error:", err);
-        return null;
-      }
-    }
-
-    async function showTodayContent() {
+    function showTodayContent() {
       const day = getCurrentDay();
       document.getElementById("dayText").textContent = `Day ${day}`;
 
       const msg = messages[day] || "I love you more with every passing day 💖";
       document.getElementById("message").textContent = msg;
 
-      const imageUrl = await getThumbnailFromSubfolder(day);
       const container = document.getElementById("photoContainer");
+      container.innerHTML = ""; // Clear old content
+
+      const imageUrl = images[day];
       if (imageUrl) {
         const img = document.createElement("img");
         img.src = imageUrl;
