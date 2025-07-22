@@ -3,46 +3,71 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Happy Birthday Countdown</title>
+  <title>🎂 Countdown to Her Birthday</title>
   <style>
+    :root {
+      --bg: linear-gradient(145deg, #f6d4ec, #d0e8f2);
+      --text: #333;
+      --accent: #ff6f91;
+    }
+
     body {
       margin: 0;
+      padding: 20px;
       font-family: 'Segoe UI', sans-serif;
+      background: var(--bg);
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      padding: 20px;
-      background: #fdfdfd;
-      color: #333;
-      text-align: center;
       min-height: 100vh;
+      color: var(--text);
+      text-align: center;
     }
+
     h1 {
-      font-size: 2rem;
-      margin-bottom: 10px;
+      font-size: 2.5rem;
+      margin-bottom: 5px;
+      color: var(--accent);
     }
+
     .day {
-      font-size: 1.1rem;
+      font-size: 1.2rem;
       margin-bottom: 15px;
-      color: #555;
     }
+
     .message {
       font-size: 1.4rem;
-      margin: 20px 0;
+      margin: 25px 0;
+      max-width: 90%;
+      color: #444;
     }
+
     img {
-      max-width: 100%;
-      border-radius: 16px;
-      box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+      max-width: 90vw;
+      max-height: 70vh;
+      border-radius: 20px;
+      box-shadow: 0 12px 30px rgba(0,0,0,0.15);
+      transition: transform 0.3s;
+    }
+
+    img:hover {
+      transform: scale(1.02);
+    }
+
+    .footer {
+      margin-top: 40px;
+      font-size: 0.9rem;
+      color: #777;
     }
   </style>
 </head>
 <body>
-  <h1>Countdown to Your Birthday 🎉</h1>
+  <h1>💖 Countdown to Your Day</h1>
   <div class="day" id="dayText">Loading...</div>
-  <div class="message" id="message">Please wait...</div>
+  <div class="message" id="message">Fetching love note...</div>
   <div id="photoContainer"></div>
+  <div class="footer">Every day is special — just like you 💫</div>
 
   <script>
     const START_DATE = new Date("2024-07-21");
@@ -55,26 +80,22 @@
       4: "You make my world beautiful 🌍",
       5: "Missing you more with every day 🕊️",
       6: "Your smile is my favourite thing 😍",
-      7: "You're the reason I believe in love ✨"
-      // Add more messages here...
+      7: "You're the reason I believe in love ✨",
+      8: "Counting days, counting blessings 💝",
+      9: "You’re my always and forever 💍",
+      10: "A little closer to your special day 🎈",
+      // Add more...
     };
 
-    const images = {
-      1: "https://drive.google.com/file/d/1dNlmyfQpCGfqpnEZfBrlqBfeMlbEfyTR/view?usp=drivesdk",
-      2: "https://example.com/image2.jpg",
-      3: "https://example.com/image3.jpg"
-      // Add more image URLs here, use actual links
-    };
-
-    function getCurrentDay() {
+    const getCurrentDay = () => {
       const today = new Date();
-      const diffTime = today - START_DATE;
-      const dayNumber = Math.floor(diffTime / (1000 * 60 * 60 * 24)) + 1;
-      const maxDays = Math.floor((END_DATE - START_DATE) / (1000 * 60 * 60 * 24)) + 1;
-      return Math.max(1, Math.min(dayNumber, maxDays));
-    }
+      const diff = today - START_DATE;
+      const totalDays = Math.floor((END_DATE - START_DATE) / (1000 * 60 * 60 * 24)) + 1;
+      const currentDay = Math.floor(diff / (1000 * 60 * 60 * 24)) + 1;
+      return Math.max(1, Math.min(currentDay, totalDays));
+    };
 
-    function showTodayContent() {
+    const showTodayContent = () => {
       const day = getCurrentDay();
       document.getElementById("dayText").textContent = `Day ${day}`;
 
@@ -82,18 +103,14 @@
       document.getElementById("message").textContent = msg;
 
       const container = document.getElementById("photoContainer");
-      container.innerHTML = ""; // Clear old content
+      container.innerHTML = "";
 
-      const imageUrl = images[day];
-      if (imageUrl) {
-        const img = document.createElement("img");
-        img.src = imageUrl;
-        img.alt = `Day ${day} photo`;
-        container.appendChild(img);
-      } else {
-        container.textContent = "No image uploaded yet 📷";
-      }
-    }
+      const image = new Image();
+      image.src = `https://your-github-username.github.io/your-repo/day${day}.jpg`;
+      image.alt = `Photo for Day ${day}`;
+      image.onerror = () => container.textContent = "No photo uploaded yet 📷";
+      container.appendChild(image);
+    };
 
     showTodayContent();
   </script>
